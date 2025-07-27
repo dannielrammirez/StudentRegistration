@@ -1,0 +1,14 @@
+<h2>Materias Disponibles</h2>
+
+<div *ngIf="courses$ | async as courses; else loading">
+  <ul>
+    <li *ngFor="let course of courses">
+      {{ course.name }} (Créditos: {{ course.credits }})
+      <small> - Profesor: {{ course.professor.fullName }}</small>
+    </li>
+  </ul>
+</div>
+
+<ng-template #loading>
+  <p>Cargando materias...</p>
+</ng-template>

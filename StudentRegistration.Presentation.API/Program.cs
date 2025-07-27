@@ -7,12 +7,11 @@ using StudentRegistration.Infraestructure.Repositories;
 var builder = WebApplication.CreateBuilder(args);
 
 
-// Agregar el DbContext para Entity Framework
 builder.Services.AddDbContext<AppDbContext>(options =>
 	options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
-builder.Services.AddAutoMapper(cfg => { cfg.AddProfile(new MappingProfile()) });
+builder.Services.AddAutoMapper(cfg => { cfg.AddProfile(new MappingProfile()); });
 
 builder.Services.AddControllers();
 
@@ -26,14 +25,13 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Habilitar Swagger solo en el entorno de desarrollo
 if (app.Environment.IsDevelopment())
 {
 	app.UseSwagger();
 	app.UseSwaggerUI(c =>
 	{
 		c.SwaggerEndpoint("/swagger/v1/swagger.json", "StudentRegistration API V1");
-		c.RoutePrefix = string.Empty; // Para que Swagger aparezca en la raíz del sitio
+		c.RoutePrefix = string.Empty;
 	});
 }
 
