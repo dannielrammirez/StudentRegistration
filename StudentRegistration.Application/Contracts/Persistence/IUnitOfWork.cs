@@ -1,0 +1,11 @@
+﻿namespace StudentRegistration.Application.Contracts.Persistence
+{
+	public interface IUnitOfWork : IDisposable
+	{
+		IStudentRepository StudentRepository { get; }
+		ICourseRepository CourseRepository { get; }
+		IProfessorRepository ProfessorRepository { get; }
+		IEnrollmentRepository EnrollmentRepository { get; }
+		Task<int> SaveChangesAsync();
+	}
+}
