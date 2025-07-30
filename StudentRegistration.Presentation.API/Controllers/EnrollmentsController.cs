@@ -1,54 +1,53 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using StudentRegistration.Application.Contracts.Persistence;
+﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Client;
 using StudentRegistration.Application.Dtos;
-using StudentRegistration.Domain.Entities;
+using StudentRegistration.Application.Features;
+using System.Security.Claims;
 
 namespace StudentRegistration.Presentation.API.Controllers
 {
+	[Authorize]
 	[ApiController]
 	[Route("api/[controller]")]
 	public class EnrollmentsController : ControllerBase
 	{
-		private readonly IUnitOfWork _unitOfWork;
+		private readonly IMediator _mediator;
 
-		public EnrollmentsController(IUnitOfWork unitOfWork)
+		public EnrollmentsController(IMediator mediator)
 		{
-			_unitOfWork = unitOfWork;
+			_mediator = mediator;
 		}
 
+		/// <summary>
+		/// Inscribe a un estudiante en un conjunto de materias.
+		/// </summary>
+		/// <remarks>
+		/// Este endpoint aplica las reglas de negocio: máximo 3 materias y no se puede repetir profesor.
+		/// </remarks>
+		/// <param name="request">DTO que contiene el ID del estudiante y la lista de IDs de las materias.</param>
+		/// <returns>Respuesta exitosa si la inscripción es válida.</returns>
+		/// <response code="200">La inscripción se procesó exitosamente.</response>
+		/// <response code="400">Si la solicitud no es válida o se viola una regla de negocio.</response>
+		/// <response code="401">Si el usuario no está autenticado.</response>
 		[HttpPost]
-		public async Task<IActionResult> CreateEnrollment([FromBody] EnrollmentRequestDto enrollmentRequest)
+		[ProducesResponseType(StatusCodes.Status200OK)]
+		[ProducesResponseType(StatusCodes.Status400BadRequest)]
+		[ProducesResponseType(StatusCodes.Status401Unauthorized)]
+		public async Task<IActionResult> CreateEnrollment(EnrollmentRequestDto request)
 		{
-			var student = await _unitOfWork.StudentRepository.GetByIdAsync(enrollmentRequest.StudentId);
+			var accountId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-			if (student == null)
-				return NotFound("Estudiante no encontrado.");
-
-			var courseToEnroll = await _unitOfWork.CourseRepository.GetByIdAsync(enrollmentRequest.CourseId);
-			
-			if (courseToEnroll == null)
-				return NotFound("Materia no encontrada.");
-			
-			var currentEnrollments = await _unitOfWork.EnrollmentRepository.GetEnrollmentsByStudentIdAsync(student.Id);
-
-			if (currentEnrollments.Count() >= 3)
-				return BadRequest("Límite de 3 materias alcanzado.");
-
-			var studentProfessorIds = currentEnrollments.Select(e => e.Course.ProfessorId).ToList();
-
-			if (studentProfessorIds.Contains(courseToEnroll.ProfessorId))
-				return BadRequest("Ya tienes una materia con este profesor.");
-
-			var newEnrollment = new Enrollment
+			var command = new CreateEnrollmentCommand
 			{
-				StudentId = student.Id,
-				CourseId = courseToEnroll.Id
+				AuthenticatedAccountId = accountId,
+				CourseIds = request.CourseIds
 			};
 
-			await _unitOfWork.EnrollmentRepository.AddAsync(newEnrollment);
-			await _unitOfWork.SaveChangesAsync();
+			await _mediator.Send(command);
 
-			return Ok(newEnrollment);
+			return Ok();
 		}
 	}
 }

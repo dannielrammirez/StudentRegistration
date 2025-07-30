@@ -6,6 +6,8 @@
 		ICourseRepository CourseRepository { get; }
 		IProfessorRepository ProfessorRepository { get; }
 		IEnrollmentRepository EnrollmentRepository { get; }
+		IRefreshTokenRepository RefreshTokenRepository { get; }
+		IAccountRepository AccountRepository { get; }
 		Task<int> SaveChangesAsync();
 	}
 }

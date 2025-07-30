@@ -1,50 +1,65 @@
-﻿namespace StudentRegistration.Application.Features
-{
-	using MediatR;
-	using StudentRegistration.Application.Contracts.Persistence;
-	using StudentRegistration.Domain.Entities;
-	using StudentRegistration.Domain.Exceptions;
+﻿using MediatR;
+using Microsoft.Extensions.Logging;
+using StudentRegistration.Application.Contracts.Persistence;
+using StudentRegistration.Domain.Entities;
+using System.Security.Principal;
 
-	public class CreateEnrollmentCommandHandler : IRequestHandler<CreateEnrollmentCommand, Guid>
+namespace StudentRegistration.Application.Features
+{
+	public class CreateEnrollmentCommandHandler : IRequestHandler<CreateEnrollmentCommand>
 	{
 		private readonly IUnitOfWork _unitOfWork;
+		private readonly ILogger<CreateEnrollmentCommandHandler> _logger;
 
-		public CreateEnrollmentCommandHandler(IUnitOfWork unitOfWork)
+		public CreateEnrollmentCommandHandler(IUnitOfWork unitOfWork, ILogger<CreateEnrollmentCommandHandler> logger)
 		{
 			_unitOfWork = unitOfWork;
+			_logger = logger;
 		}
 
-		public async Task<Guid> Handle(CreateEnrollmentCommand request, CancellationToken cancellationToken)
+		public async Task Handle(CreateEnrollmentCommand request, CancellationToken cancellationToken)
 		{
-			var student = await _unitOfWork.StudentRepository.GetByIdAsync(request.StudentId);
-			if (student == null) throw new Exception("Estudiante no encontrado."); // O una excepción personalizada
-
-			var courseToEnroll = await _unitOfWork.CourseRepository.GetByIdAsync(request.CourseId);
-			if (courseToEnroll == null) throw new Exception("Materia no encontrada.");
-
-			var currentEnrollments = await _unitOfWork.EnrollmentRepository.GetEnrollmentsByStudentIdAsync(student.Id);
-
-			if (currentEnrollments.Count() >= 3)
+			try
 			{
-				throw new EnrollmentRuleException("Límite de 3 materias alcanzado.");
+				if (request.CourseIds.Count != 3)
+					throw new Exception("Debe seleccionar exactamente 3 materias para inscribirse.");
+
+				var account = await _unitOfWork.AccountRepository.GetByIdAsync(request.AuthenticatedAccountId) ?? throw new Exception("La cuenta de usuario no es válida.");
+				
+				var studentId = account.IdReferencia;
+
+				var student = await _unitOfWork.StudentRepository.GetByIdAsync(studentId) ?? throw new Exception($"Estudiante con ID {studentId} no encontrado.");
+
+				var currentEnrollments = await _unitOfWork.EnrollmentRepository.GetEnrollmentsByStudentIdAsync(studentId);
+
+				var selectedCourses = new List<Course>();
+				foreach (var courseId in request.CourseIds)
+				{
+					var course = await _unitOfWork.CourseRepository.GetByIdAsync(courseId) ?? throw new Exception($"Materia con ID {courseId} no encontrada.");
+					selectedCourses.Add(course);
+				}
+
+				var existingProfessorIds = currentEnrollments.Select(e => e.Course.ProfessorId);
+				var newProfessorIds = selectedCourses.Select(c => c.ProfessorId);
+				var allProfessorIds = existingProfessorIds.Concat(newProfessorIds).ToList();
+
+				if (allProfessorIds.Count != allProfessorIds.Distinct().Count())
+					throw new Exception("No puedes inscribir dos materias con el mismo profesor.");
+
+				var newEnrollments = request.CourseIds.Select(courseId => new Enrollment
+				{
+					StudentId = studentId,
+					CourseId = courseId
+				}).ToList();
+
+				await _unitOfWork.EnrollmentRepository.AddRangeAsync(newEnrollments);
+				await _unitOfWork.SaveChangesAsync();
 			}
-
-			var studentProfessorIds = currentEnrollments.Select(e => e.Course.ProfessorId).ToList();
-			if (studentProfessorIds.Contains(courseToEnroll.ProfessorId))
+			catch (Exception ex)
 			{
-				throw new EnrollmentRuleException("Ya tienes una materia con este profesor.");
+				_logger.LogError(ex, "Ocurrió un error en el proceso de asignacion de materias para el estudiante {request.AuthenticatedStudentId}", request.AuthenticatedAccountId);
+				throw;
 			}
-
-			var newEnrollment = new Enrollment
-			{
-				StudentId = student.Id,
-				CourseId = courseToEnroll.Id
-			};
-
-			await _unitOfWork.EnrollmentRepository.AddAsync(newEnrollment);
-			await _unitOfWork.SaveChangesAsync();
-
-			return newEnrollment.Id;
 		}
 	}
 }

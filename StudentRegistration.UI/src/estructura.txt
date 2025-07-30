@@ -1,0 +1,84 @@
+Listado de rutas de carpetas
+El número de serie del volumen es 905D-659E
+C:.
+¦   estructura.txt
+¦   index.html
+¦   main.ts
+¦   styles.scss
+¦   
++---app
+    ¦   app.component.html
+    ¦   app.component.scss
+    ¦   app.component.ts
+    ¦   app.config.ts
+    ¦   app.html
+    ¦   app.routes.ts
+    ¦   app.scss
+    ¦   app.spec.ts
+    ¦   app.ts
+    ¦   
+    +---environments
+    ¦       environment.ts
+    ¦       
+    +---features
+    ¦   +---auth
+    ¦   ¦   ¦   auth-guard.spec.ts
+    ¦   ¦   ¦   auth-guard.ts
+    ¦   ¦   ¦   auth-interceptor.spec.ts
+    ¦   ¦   ¦   auth-interceptor.ts
+    ¦   ¦   ¦   auth.service.ts
+    ¦   ¦   ¦   
+    ¦   ¦   +---login
+    ¦   ¦   ¦       login.component.html
+    ¦   ¦   ¦       login.component.scss
+    ¦   ¦   ¦       login.component.spec.ts
+    ¦   ¦   ¦       login.component.ts
+    ¦   ¦   ¦       
+    ¦   ¦   +---register
+    ¦   ¦           register.component.html
+    ¦   ¦           register.component.scss
+    ¦   ¦           register.component.ts
+    ¦   ¦           
+    ¦   +---courses
+    ¦   ¦   ¦   course..service.spec.ts
+    ¦   ¦   ¦   course.service.ts
+    ¦   ¦   ¦   
+    ¦   ¦   +---course-form
+    ¦   ¦   ¦       course-form.component.html
+    ¦   ¦   ¦       course-form.component.scss
+    ¦   ¦   ¦       course-form.component.spec.ts
+    ¦   ¦   ¦       course-form.component.ts
+    ¦   ¦   ¦       
+    ¦   ¦   +---course-list
+    ¦   ¦           course-list.component.html
+    ¦   ¦           course-list.component.scss
+    ¦   ¦           course-list.component.spec.ts
+    ¦   ¦           course-list.component.ts
+    ¦   ¦           
+    ¦   +---enrollment
+    ¦   ¦   ¦   enrollment.service.spec.ts
+    ¦   ¦   ¦   enrollment.service.ts
+    ¦   ¦   ¦   
+    ¦   ¦   +---enrollment-form
+    ¦   ¦           enrollment-form.component.html
+    ¦   ¦           enrollment-form.component.scss
+    ¦   ¦           enrollment-form.component.spec.ts
+    ¦   ¦           enrollment-form.component.ts
+    ¦   ¦           
+    ¦   +---students
+    ¦       ¦   student.service.ts
+    ¦       ¦   
+    ¦       +---student-list
+    ¦               student-list.component.html
+    ¦               student-list.component.scss
+    ¦               student-list.component.spec.ts
+    ¦               student-list.component.ts
+    ¦               
+    +---shared
+        +---models
+                auth.model.ts
+                course.ts
+                enrollment.ts
+                professor.ts
+                student.ts
+                

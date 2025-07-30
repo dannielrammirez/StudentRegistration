@@ -2,9 +2,9 @@
 
 namespace StudentRegistration.Application.Features
 {
-	public class CreateEnrollmentCommand : IRequest<Guid>
+	public class CreateEnrollmentCommand : IRequest
 	{
-		public Guid StudentId { get; set; }
-		public Guid CourseId { get; set; }
+		public Guid AuthenticatedAccountId { get; set; }
+		public List<Guid> CourseIds { get; set; }
 	}
 }

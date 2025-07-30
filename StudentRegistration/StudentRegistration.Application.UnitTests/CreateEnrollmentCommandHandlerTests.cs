@@ -1,91 +1,65 @@
-﻿using Moq;
+﻿using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using Moq;
 using StudentRegistration.Application.Contracts.Persistence;
 using StudentRegistration.Application.Features;
 using StudentRegistration.Domain.Entities;
-using StudentRegistration.Domain.Exceptions;
-using FluentAssertions;
 
-namespace StudentRegistration.Application.UnitTests
+namespace StudentRegistration.Application.UnitTests.Features.Enrollments;
+
+public class CreateEnrollmentCommandHandlerTests
 {
-	public class CreateEnrollmentCommandHandlerTests
+	private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+	private readonly Mock<ILogger<CreateEnrollmentCommandHandler>> _loggerMock;
+	private readonly Mock<IStudentRepository> _studentRepositoryMock;
+	private readonly Mock<ICourseRepository> _courseRepositoryMock;
+	private readonly Mock<IEnrollmentRepository> _enrollmentRepositoryMock;
+	private readonly CreateEnrollmentCommandHandler _handler;
+
+	public CreateEnrollmentCommandHandlerTests()
 	{
-		private readonly Mock<IUnitOfWork> _unitOfWorkMock;
-		private readonly CreateEnrollmentCommandHandler _handler;
+		_unitOfWorkMock = new Mock<IUnitOfWork>();
+		_loggerMock = new Mock<ILogger<CreateEnrollmentCommandHandler>>();
+		_studentRepositoryMock = new Mock<IStudentRepository>();
+		_courseRepositoryMock = new Mock<ICourseRepository>();
+		_enrollmentRepositoryMock = new Mock<IEnrollmentRepository>();
 
-		public CreateEnrollmentCommandHandlerTests()
-		{
-			_unitOfWorkMock = new Mock<IUnitOfWork>();
-			_handler = new CreateEnrollmentCommandHandler(_unitOfWorkMock.Object);
-		}
+		_unitOfWorkMock.Setup(u => u.StudentRepository).Returns(_studentRepositoryMock.Object);
+		_unitOfWorkMock.Setup(u => u.CourseRepository).Returns(_courseRepositoryMock.Object);
+		_unitOfWorkMock.Setup(u => u.EnrollmentRepository).Returns(_enrollmentRepositoryMock.Object);
 
-		[Fact]
-		public async Task Handle_ShouldThrowException_WhenStudentHasThreeOrMoreCourses()
-		{
-			// Arrange (Preparar)
-			var command = new CreateEnrollmentCommand { StudentId = Guid.NewGuid(), CourseId = Guid.NewGuid() };
+		_handler = new CreateEnrollmentCommandHandler(_unitOfWorkMock.Object, _loggerMock.Object);
+	}
 
-			var student = new Student { Id = command.StudentId };
-			var existingEnrollments = new List<Enrollment>
-		{
-			new Enrollment { Course = new Course { Professor = new Professor() } },
-			new Enrollment { Course = new Course { Professor = new Professor() } },
-			new Enrollment { Course = new Course { Professor = new Professor() } }
-		};
+	[Fact]
+	public async Task Handle_ShouldThrowException_WhenStudentExceedsCourseLimit()
+	{
+		var studentId = Guid.NewGuid();
+		var command = new CreateEnrollmentCommand { AuthenticatedAccountId = studentId, CourseIds = new List<Guid> { Guid.NewGuid() } };
+		var existingEnrollments = new List<Enrollment> { new(), new(), new() };
 
-			_unitOfWorkMock.Setup(u => u.StudentRepository.GetByIdAsync(command.StudentId)).ReturnsAsync(student);
-			_unitOfWorkMock.Setup(u => u.CourseRepository.GetByIdAsync(command.CourseId)).ReturnsAsync(new Course());
-			_unitOfWorkMock.Setup(u => u.EnrollmentRepository.GetEnrollmentsByStudentIdAsync(command.StudentId)).ReturnsAsync(existingEnrollments);
+		_studentRepositoryMock.Setup(r => r.GetByIdAsync(studentId)).ReturnsAsync(new Student());
+		_enrollmentRepositoryMock.Setup(r => r.GetEnrollmentsByStudentIdAsync(studentId)).ReturnsAsync(existingEnrollments);
 
-			// Act (Actuar)
-			Func<Task> act = async () => await _handler.Handle(command, default);
+		Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
-			// Assert (Verificar)
-			await act.Should().ThrowAsync<EnrollmentRuleException>()
-				.WithMessage("Límite de 3 materias alcanzado.");
-		}
+		await act.Should().ThrowAsync<Exception>().WithMessage("La selección excede el límite de 3 materias.");
+	}
 
-		[Fact]
-		public async Task Handle_ShouldThrowException_WhenStudentAlreadyHasCourseWithSameProfessor()
-		{
-			// Arrange
-			var professorId = Guid.NewGuid();
-			var command = new CreateEnrollmentCommand { StudentId = Guid.NewGuid(), CourseId = Guid.NewGuid() };
+	[Fact]
+	public async Task Handle_ShouldSucceed_WhenEnrollmentIsValid()
+	{
+		var studentId = Guid.NewGuid();
+		var course1 = new Course { Id = Guid.NewGuid(), ProfessorId = Guid.NewGuid() };
+		var command = new CreateEnrollmentCommand { AuthenticatedAccountId = studentId, CourseIds = new List<Guid> { course1.Id } };
 
-			var student = new Student { Id = command.StudentId };
-			var courseToEnroll = new Course { Id = command.CourseId, ProfessorId = professorId };
-			var existingEnrollments = new List<Enrollment>
-		{
-			new Enrollment { Course = new Course { ProfessorId = professorId } }
-		};
+		_studentRepositoryMock.Setup(r => r.GetByIdAsync(studentId)).ReturnsAsync(new Student());
+		_enrollmentRepositoryMock.Setup(r => r.GetEnrollmentsByStudentIdAsync(studentId)).ReturnsAsync(new List<Enrollment>());
+		_courseRepositoryMock.Setup(r => r.GetByIdAsync(course1.Id)).ReturnsAsync(course1);
 
-			_unitOfWorkMock.Setup(u => u.StudentRepository.GetByIdAsync(command.StudentId)).ReturnsAsync(student);
-			_unitOfWorkMock.Setup(u => u.CourseRepository.GetByIdAsync(command.CourseId)).ReturnsAsync(courseToEnroll);
-			_unitOfWorkMock.Setup(u => u.EnrollmentRepository.GetEnrollmentsByStudentIdAsync(command.StudentId)).ReturnsAsync(existingEnrollments);
+		await _handler.Handle(command, CancellationToken.None);
 
-			// Act
-			Func<Task> act = async () => await _handler.Handle(command, default);
-
-			// Assert
-			await act.Should().ThrowAsync<EnrollmentRuleException>()
-				.WithMessage("Ya tienes una materia con este profesor.");
-		}
-
-		[Fact]
-		public async Task Handle_ShouldAddEnrollmentAndSaveChanges_WhenValidationSucceeds()
-		{
-			// Arrange
-			var command = new CreateEnrollmentCommand { StudentId = Guid.NewGuid(), CourseId = Guid.NewGuid() };
-
-			_unitOfWorkMock.Setup(u => u.StudentRepository.GetByIdAsync(command.StudentId)).ReturnsAsync(new Student());
-			_unitOfWorkMock.Setup(u => u.CourseRepository.GetByIdAsync(command.CourseId)).ReturnsAsync(new Course { Professor = new Professor() });
-			_unitOfWorkMock.Setup(u => u.EnrollmentRepository.GetEnrollmentsByStudentIdAsync(command.StudentId)).ReturnsAsync(new List<Enrollment>());
-
-			// Act
-			await _handler.Handle(command, default);
-
-			// Assert
-			_unitOfWorkMock.Verify(u => u.EnrollmentRepository.AddAsync(It.IsAny<Enrollment>()), Times.Once);
-			_unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once);
-		}
+		_enrollmentRepositoryMock.Verify(r => r.AddRangeAsync(It.Is<List<Enrollment>>(l => l.Count == 1)), Times.Once);
+		_unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once);
 	}
 }

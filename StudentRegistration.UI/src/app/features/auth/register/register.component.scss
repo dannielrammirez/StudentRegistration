@@ -1,0 +1,73 @@
+.register-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 0;
+}
+
+.register-box {
+  padding: 2rem 2.5rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 450px;
+  text-align: center;
+}
+
+h2 {
+  margin-bottom: 1.5rem;
+  color: #003366;
+}
+
+.input-group {
+  margin-bottom: 1.25rem;
+  text-align: left;
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #333;
+    font-size: 0.9rem;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+  }
+}
+
+button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #003366;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  
+  &:disabled {
+    background-color: #ccc;
+  }
+}
+
+.error-message {
+  margin-top: 1rem;
+  color: #d9534f;
+}
+
+.login-link {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: #555;
+  
+  a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+  }
+}

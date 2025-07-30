@@ -1,0 +1,25 @@
+/* Estilos para la lista de cursos */
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  padding: 12px 15px;
+  margin-bottom: 8px;
+  transition: background-color 0.2s ease-in-out;
+
+  &:hover {
+    background-color: #e9ecef;
+  }
+}
+
+small {
+  color: #6c757d;
+  display: block;
+  margin-top: 4px;
+}

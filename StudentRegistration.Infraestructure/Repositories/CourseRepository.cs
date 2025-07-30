@@ -16,15 +16,18 @@ namespace StudentRegistration.Infraestructure.Repositories
 
 		public async Task<Course> GetByIdAsync(Guid id)
 		{
-			return await _context.Courses.FindAsync(id);
+			var response = await _context.Courses.FindAsync(id);
+			return response;
 		}
 
 		public async Task<IEnumerable<Course>> GetAllAsync()
 		{
-			return await _context.Courses
+			var response = await _context.Courses
 				.Where(c => c.IsActive)
 				.Include(c => c.Professor)
 				.ToListAsync();
+
+			return response;
 		}
 	}
 }

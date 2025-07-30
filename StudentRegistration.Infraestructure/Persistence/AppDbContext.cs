@@ -13,6 +13,8 @@ namespace StudentRegistration.Infraestructure.Persistence
 		public DbSet<Professor> Professors { get; set; }
 		public DbSet<Course> Courses { get; set; }
 		public DbSet<Enrollment> Enrollments { get; set; }
+		public DbSet<Account> Account { get; set; }
+		public DbSet<RefreshToken> RefreshToken { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{

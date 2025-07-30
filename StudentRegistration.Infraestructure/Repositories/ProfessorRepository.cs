@@ -15,7 +15,8 @@ namespace StudentRegistration.Infraestructure.Repositories
 
 		public async Task<Professor> GetByIdAsync(Guid id)
 		{
-			return await _context.Professors.FindAsync(id);
+			var response = await _context.Professors.FindAsync(id);
+			return response;
 		}
 	}
 }

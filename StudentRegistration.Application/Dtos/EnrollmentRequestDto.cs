@@ -3,6 +3,6 @@
 	public class EnrollmentRequestDto
 	{
 		public Guid StudentId { get; set; }
-		public Guid CourseId { get; set; }
+		public List<Guid> CourseIds { get; set; }
 	}
 }

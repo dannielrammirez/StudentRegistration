@@ -1,0 +1,31 @@
+<div class="table-container">
+  <h2>Mis Compañeros de Clase</h2>
+  
+  <div *ngIf="isLoading" class="spinner-container">
+    <mat-spinner></mat-spinner>
+  </div>
+  
+  <div *ngIf="!isLoading && dataSource.data.length === 0" class="empty-state">
+    <p>Aún no tienes compañeros. ¡Inscribe algunas materias para ver quién más está en tus clases!</p>
+  </div>
+
+  <table mat-table [dataSource]="dataSource" class="mat-elevation-z8" *ngIf="!isLoading && dataSource.data.length > 0">
+    <ng-container matColumnDef="firstName">
+      <th mat-header-cell *matHeaderCellDef> Nombre </th>
+      <td mat-cell *matCellDef="let student"> {{student.firstName}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="lastName">
+      <th mat-header-cell *matHeaderCellDef> Apellido </th>
+      <td mat-cell *matCellDef="let student"> {{student.lastName}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="email">
+      <th mat-header-cell *matHeaderCellDef> Correo Electrónico </th>
+      <td mat-cell *matCellDef="let student"> {{student.email}} </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+</div>

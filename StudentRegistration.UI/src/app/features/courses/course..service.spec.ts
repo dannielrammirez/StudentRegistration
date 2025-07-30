@@ -1,52 +1,106 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { CourseService } from './course.service';
-import { Course } from '../../shared/models/course';
-import { environment } from '../../../environments/environment';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { Course } from '@shared/models/course';
 
 describe('CourseService', () => {
   let service: CourseService;
-  let httpTestingController: HttpTestingController;
-  const testUrl = `${environment.apiUrl}/courses`;
+  let httpMock: HttpTestingController;
+
+  const dummyCourses: Course[] = [
+    {
+      id: '1',
+      name: 'Matemáticas',
+      credits: 3,
+      idProfessor: 'p1',
+      isActive: true,
+      createdAt: new Date().toISOString()
+    },
+    {
+      id: '2',
+      name: 'Física',
+      credits: 3,
+      idProfessor: 'p2',
+      isActive: true,
+      createdAt: new Date().toISOString()
+    }
+  ];
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [CourseService]
     });
+
     service = TestBed.inject(CourseService);
-    httpTestingController = TestBed.inject(HttpTestingController);
+    httpMock = TestBed.inject(HttpTestingController);
   });
 
   afterEach(() => {
-    // Después de cada prueba, verifica que no queden peticiones pendientes.
-    httpTestingController.verify();
+    httpMock.verify();
   });
 
-  it('should be created', () => {
+  it('debería instanciar el servicio', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should retrieve courses from the API via GET', () => {
-    const mockCourses: Course[] = [
-      { id: '1', name: 'Test Course 1', credits: 3, professor: { id: 'p1', fullName: 'Profesor Test' } },
-      { id: '2', name: 'Test Course 2', credits: 3, professor: { id: 'p2', fullName: 'Profesora Test' } }
-    ];
-
-    // Llama al método del servicio. Aún no se ha hecho la petición real.
+  it('debería obtener lista de cursos (GET)', () => {
     service.getCourses().subscribe(courses => {
-      // Esta parte se ejecuta DESPUÉS de que la petición simulada responde.
       expect(courses.length).toBe(2);
-      expect(courses).toEqual(mockCourses);
+      expect(courses).toEqual(dummyCourses);
     });
 
-    // Ahora, esperamos que se haya hecho una petición a la URL correcta.
-    const req = httpTestingController.expectOne(testUrl);
+    const req = httpMock.expectOne('https://localhost:5001/api/courses');
+    expect(req.request.method).toBe('GET');
+    req.flush(dummyCourses);
+  });
 
-    // Verificamos que el método de la petición sea GET.
-    expect(req.request.method).toEqual('GET');
+  it('debería crear un curso (POST)', () => {
+    const newCourse: Course = dummyCourses[0];
 
-    // Simulamos una respuesta exitosa del servidor, enviando nuestros datos falsos.
-    req.flush(mockCourses);
+    service.createCourse(newCourse).subscribe(course => {
+      expect(course).toEqual(newCourse);
+    });
+
+    const req = httpMock.expectOne('https://localhost:5001/api/courses');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual(newCourse);
+    req.flush(newCourse);
+  });
+
+  it('debería actualizar un curso (PUT)', () => {
+    const updatedCourse: Course = { ...dummyCourses[0], name: 'Matemáticas Avanzadas' };
+
+    service.updateCourse(updatedCourse).subscribe(course => {
+      expect(course.name).toBe('Matemáticas Avanzadas');
+    });
+
+    const req = httpMock.expectOne(`https://localhost:5001/api/courses/${updatedCourse.id}`);
+    expect(req.request.method).toBe('PUT');
+    req.flush(updatedCourse);
+  });
+
+  it('debería eliminar un curso (DELETE)', () => {
+    const courseId = '1';
+
+    service.deleteCourse(courseId).subscribe(response => {
+      expect(response).toBeUndefined(); // void
+    });
+
+    const req = httpMock.expectOne(`https://localhost:5001/api/courses/${courseId}`);
+    expect(req.request.method).toBe('DELETE');
+    req.flush(null);
+  });
+
+  it('debería obtener un curso por ID (GET)', () => {
+    const courseId = '1';
+
+    service.getCourseById(courseId).subscribe(course => {
+      expect(course).toEqual(dummyCourses[0]);
+    });
+
+    const req = httpMock.expectOne(`https://localhost:44349/api/courses/${courseId}`);
+    expect(req.request.method).toBe('GET');
+    req.flush(dummyCourses[0]);
   });
 });

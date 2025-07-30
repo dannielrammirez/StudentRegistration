@@ -8,5 +8,6 @@ namespace StudentRegistration.Application.Contracts.Persistence
 		Task<Student> GetByEmailAsync(string email);
 		Task<IEnumerable<Student>> GetAllAsync();
 		Task AddAsync(Student student);
+		Task<IEnumerable<Student>> GetByIdsAsync(List<Guid> ids);
 	}
 }

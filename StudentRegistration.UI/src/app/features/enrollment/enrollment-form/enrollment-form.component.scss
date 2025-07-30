@@ -1,0 +1,30 @@
+.form-card {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 20px;
+
+  mat-card-title {
+    font-size: 22px;
+    font-weight: 600;
+  }
+
+  .full-width {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .course-selection {
+    margin: 20px 0;
+
+    mat-checkbox {
+      display: block;
+      margin-bottom: 8px;
+    }
+  }
+
+  .btn-wrapper {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 25px;
+  }
+}

@@ -1,0 +1,15 @@
+<nav class="navbar">
+  <div class="navbar-brand">
+    Registro Académico
+  </div>
+  <div class="navbar-links" *ngIf="authService.isAuthenticated()">
+    <a routerLink="/enroll" routerLinkActive="active">Inscripción</a>
+    <a routerLink="/courses" routerLinkActive="active">Materias</a>
+    <a routerLink="/students" routerLinkActive="active">Estudiantes</a>
+    <button (click)="logout()">Salir</button>
+  </div>
+</nav>
+
+<main class="main-content">
+  <router-outlet></router-outlet>
+</main>
