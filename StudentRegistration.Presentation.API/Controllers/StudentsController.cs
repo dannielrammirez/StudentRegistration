@@ -63,7 +63,7 @@ namespace StudentRegistration.Presentation.API.Controllers
 		{
 			var studentId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-			var query = new GetClassmatesQuery { AuthenticatedStudentId = studentId };
+			var query = new GetClassmatesQuery { AuthenticatedAccountId = studentId };
 
 			var classmates = await _mediator.Send(query);
 

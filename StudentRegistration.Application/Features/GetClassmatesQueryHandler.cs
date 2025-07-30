@@ -23,7 +23,11 @@ namespace StudentRegistration.Application.Features
 		{
 			try
 			{
-				var myEnrollments = await _unitOfWork.EnrollmentRepository.GetEnrollmentsByStudentIdAsync(request.AuthenticatedStudentId);
+				var account = await _unitOfWork.AccountRepository.GetByIdAsync(request.AuthenticatedAccountId) ?? throw new Exception("La cuenta de usuario no es válida.");
+
+				var studentId = account.IdReferencia;
+
+				var myEnrollments = await _unitOfWork.EnrollmentRepository.GetEnrollmentsByStudentIdAsync(studentId);
 				var myCourseIds = myEnrollments.Select(e => e.CourseId).ToList();
 
 				if (!myCourseIds.Any())
@@ -32,7 +36,7 @@ namespace StudentRegistration.Application.Features
 				var classmatesEnrollments = await _unitOfWork.EnrollmentRepository.GetEnrollmentsByCourseIdsAsync(myCourseIds);
 
 				var classmateIds = classmatesEnrollments
-					.Where(e => e.StudentId != request.AuthenticatedStudentId)
+					.Where(e => e.StudentId != request.AuthenticatedAccountId)
 					.Select(e => e.StudentId)
 					.Distinct()
 					.ToList();

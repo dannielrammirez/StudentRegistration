@@ -5,6 +5,6 @@ namespace StudentRegistration.Application.Features
 {
 	public class GetClassmatesQuery : IRequest<IEnumerable<StudentDto>>
 	{
-		public Guid AuthenticatedStudentId { get; set; }
+		public Guid AuthenticatedAccountId { get; set; }
 	}
 }
