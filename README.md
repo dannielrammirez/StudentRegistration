@@ -1,76 +1,71 @@
-# PruebaTecnicaInterRapidisimo
-Proyecto de Registro Estudiantil
-Resumen de la Aplicación
-Aplicación Full-Stack de tipo Cliente-Servidor desarrollada con .NET 8 y Angular 17 que simula un sistema de registro académico. La plataforma permite la gestión de estudiantes, materias y profesores, aplicando un conjunto de reglas de negocio específicas para el proceso de inscripción en un programa de créditos.
+# Proyecto de Registro Estudiantil - Prueba Técnica
+
+## Resumen de la Aplicación
+
+Aplicación Full-Stack de tipo Cliente-Servidor desarrollada con **.NET 9** y **Angular 17** que implementa un sistema de registro académico. La plataforma permite a los usuarios registrarse, iniciar sesión e inscribir materias bajo un conjunto de reglas de negocio específicas, como un límite de créditos y restricciones de profesorado.
 
 La seguridad se gestiona mediante autenticación basada en Tokens JWT, protegiendo las rutas y la comunicación entre el cliente y el servidor.
 
-🚀 Arquitectura y Tecnologías
-El proyecto fue diseñado siguiendo principios de software modernos para garantizar escalabilidad, mantenibilidad y un código limpio.
+---
+## 🚀 Arquitectura y Puntos a Destacar
 
-Backend (.NET 8)
-Se implementó una Arquitectura Limpia (Clean Architecture) para separar las responsabilidades del sistema en capas bien definidas:
+Esta aplicación no es solo un CRUD, sino una demostración de prácticas de desarrollo modernas.
 
-Domain: Contiene las entidades del negocio y las reglas más puras, sin dependencias externas.
+### Backend (.NET 8)
 
-Application: Orquesta los casos de uso y la lógica de la aplicación. Aquí se implementó el patrón CQRS con MediatR para desacoplar la lógica de los controladores. Se definen todos los contratos (interfaces) que las capas externas deben implementar.
+* **Arquitectura Limpia (Clean Architecture)**: Se separaron las responsabilidades del sistema en capas (`Domain`, `Application`, `Infrastructure`, `Presentation`) para un bajo acoplamiento y alta cohesión.
+* **Patrón CQRS con MediatR**: La lógica de negocio está aislada en `Commands` y `Queries` dentro de la capa de Aplicación, manteniendo los controladores extremadamente delgados y enfocados.
+* **Unit of Work y Repositorio**: Se abstrajo el acceso a datos mediante estos patrones para centralizar la gestión de la base de datos y asegurar transacciones atómicas con Entity Framework Core.
+* **Inyección de Dependencias**: Todo el sistema está construido sobre la inyección de dependencias, lo que facilita las pruebas y la mantenibilidad.
+* **Manejo de Errores Global**: Un `Middleware` personalizado captura todas las excepciones no controladas y devuelve respuestas JSON estandarizadas y seguras.
+* **Data Seeding con Bogus**: El API puebla automáticamente la base de datos con datos de prueba realistas y en español cada vez que se inicia en modo de desarrollo.
+* **Documentación con Swagger**: Todos los endpoints están documentados para facilitar las pruebas y la integración.
 
-Infrastructure: Contiene las implementaciones de los contratos. Se encarga del acceso a datos con Entity Framework Core (usando el patrón Unit of Work y Repositorio) y de servicios externos como el de seguridad para la generación de JWT.
+### Frontend (Angular 17)
 
-Presentation (API): Una API RESTful "delgada" y segura que expone la funcionalidad al cliente. Los endpoints están documentados con Swagger/OpenAPI.
+* **Arquitectura Standalone**: Se utilizó la arquitectura de componentes `standalone` más reciente para un diseño más simple y modular.
+* **Formularios Reactivos**: Los formularios de login, registro e inscripción utilizan `ReactiveFormsModule` para un manejo robusto del estado y validaciones complejas.
+* **Autenticación Segura**: El flujo de autenticación se maneja con:
+    * **Route Guards**: Para proteger las rutas que requieren inicio de sesión.
+    * **HTTP Interceptor**: Para adjuntar automáticamente el token JWT a todas las peticiones salientes al API.
+* **Alias de Rutas (`tsconfig.json`)**: Se configuraron alias para importaciones limpias y mantenibles (`@features`, `@shared`).
+* **Interfaz Atractiva**: Se utilizó **Angular Material** para construir una interfaz de usuario intuitiva y con una apariencia profesional.
 
-Además, el API cuenta con un manejador de errores global (Middleware) y un sistema de carga de datos inicial (Data Seeder) con datos aleatorios para el entorno de desarrollo.
+---
+## 🗃️ Configuración de la Base de Datos
 
-Frontend (Angular 17)
-Se desarrolló una Single-Page Application (SPA) utilizando la arquitectura Standalone más reciente de Angular.
+**1. Cadena de Conexión**
+El API está configurado por defecto para conectarse a un servidor SQL Server local.
 
-Servicios: Se centralizó toda la comunicación con el API en servicios específicos para cada entidad, utilizando HttpClient.
+* **Servidor**: `localhost\sqlexpress`
+* **Nombre de la Base de Datos**: `DanielRamirez_PruebaInterRapidisimo`
 
-Manejo de Estado Reactivo: Se utilizó RxJS y Observables para manejar los flujos de datos de forma asíncrona, creando una interfaz de usuario reactiva.
+Verifica que esta configuración en el archivo `appsettings.json` del proyecto API coincida con tu entorno.
 
-Autenticación: El flujo de login está protegido mediante Route Guards (para proteger las rutas) y un HTTP Interceptor (para adjuntar automáticamente el token JWT a todas las peticiones).
+**2. Creación de la Base de Datos**
 
-Diseño Limpio: Se usó SCSS para los estilos, siguiendo una estructura organizada y modular.
+Tienes dos opciones para crear y poblar la base de datos:
 
-📋 Prerrequisitos
-.NET 8 SDK o superior.
+* **Opción A (Automática - Recomendada)**: Simplemente **ejecuta el proyecto API en modo de Desarrollo**. El sistema está configurado para **borrar, recrear y poblar la base de datos automáticamente** en cada inicio. Esto incluye la creación de profesores, materias y una cuenta de prueba.
+    * **Usuario de Prueba**: `test@test.com`
+    * **Contraseña**: `123456`
 
-Node.js 20.x o superior.
+* **Opción B (Manual)**: Si prefieres crear la estructura manualmente, puedes ejecutar el script SQL provisto.
+    * **Nombre del Script**: `[01_Create_Database_Schema].sql`
+    * **Ubicación del Script**: El script se encuentra dentro de la carpeta del proyecto `StudentRegistration.Presentation.API`.
 
-Angular CLI 17 o superior.
+---
+## ⚙️ Ejecución del Proyecto
 
-SQL Server (Express, Developer, etc.).
-
-Visual Studio 2022.
-
-Visual Studio Code.
-
-⚙️ Instalación y Ejecución
-1. Clonar el Repositorio
-
-Bash
-
-git clone <URL_DE_TU_REPOSITORIO>
-2. Configuración del Backend
-
-Abrir la solución (.sln) en Visual Studio.
-
-En el proyecto StudentRegistration.Presentation.API, abrir el archivo appsettings.json.
-
-Modificar la cadena de conexión DefaultConnection para que apunte a tu instancia de SQL Server.
-
-3. Ejecución del Backend
-
-Seleccionar el proyecto StudentRegistration.Presentation.API como proyecto de inicio.
-
-Presionar F5 o el botón de ejecutar. La API se iniciará y la base de datos se creará y poblará con datos aleatorios automáticamente. Se abrirá la interfaz de Swagger.
-
-4. Configuración del Frontend
-
-Abrir la carpeta StudentRegistration.UI en Visual Studio Code.
-
-Abrir una nueva terminal y ejecutar npm install para instalar las dependencias.
-
-5. Ejecución del Frontend
-
-En la misma terminal, ejecutar ng serve.
+1.  **Clonar el Repositorio**.
+2.  **Backend**:
+    * Abre la solución (`.sln`) en Visual Studio 2022.
+    * Asegúrate de que la cadena de conexión en `appsettings.json` sea correcta.
+    * Ejecuta el proyecto `StudentRegistration.Presentation.API`.
+3.  **Frontend**:
+    * Abre la carpeta `StudentRegistration.UI` en Visual Studio Code.
+    * Abre una nueva terminal y ejecuta `npm install`.
+    * Una vez finalizado, ejecuta `ng serve`.
+4.  **Acceder a la Aplicación**:
+    * Abre un navegador y ve a `http://localhost:4200`.
+    * Inicia sesión con la cuenta de prueba mencionada en la sección de la base de datos.
